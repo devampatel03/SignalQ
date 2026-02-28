@@ -66,6 +66,7 @@ class SignalIQEvent(Event):
     enabling it to reason about prospect signals and generate
     contextual whispers.
     """
+    type: str = "SignalIQEvent"
     engagement_score: float = 0.0
     dominant_emotion: str = "neutral"
     confidence: float = 0.0
