@@ -1,0 +1,1 @@
+"""SignalIQ — FastAPI server."""

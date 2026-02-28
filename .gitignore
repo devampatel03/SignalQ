@@ -1,0 +1,44 @@
+# SignalIQ
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.eggs/
+*.egg
+
+# Environment
+.env
+.venv/
+venv/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database
+*.db
+
+# Models (large binary files)
+models/*.pt
+models/*.h5
+models/*.onnx
+
+# Node
+frontend/node_modules/
+frontend/dist/
+frontend/.next/
+
+# Misc
+*.log
+.uv/
+
+CLAUDE (1).md
