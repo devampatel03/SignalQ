@@ -50,17 +50,34 @@ class ExpressionClassifier:
         except Exception as e:
             logger.warning(f"FER backend failed: {type(e).__name__}: {e}")
 
-        # Attempt 2: DeepFace (works well on Colab)
+        # Attempt 2: DeepFace — pre-download weights then test
         try:
             from deepface import DeepFace
-            # Test that it works with a dummy image
+            self._ensure_deepface_weights()
+
+            import time
             _test = np.zeros((48, 48, 3), dtype=np.uint8)
-            DeepFace.analyze(_test, actions=["emotion"], enforce_detection=False, silent=True)
-            self._model = DeepFace
-            self._backend = "deepface"
-            self._initialized = True
-            logger.info("FER expression classifier initialized (deepface backend)")
-            return
+
+            # Retry up to 2 times (DeepFace lazy-downloads on first call)
+            for attempt in range(2):
+                try:
+                    DeepFace.analyze(
+                        _test,
+                        actions=["emotion"],
+                        enforce_detection=False,
+                        silent=True,
+                    )
+                    self._model = DeepFace
+                    self._backend = "deepface"
+                    self._initialized = True
+                    logger.info("FER expression classifier initialized (deepface backend)")
+                    return
+                except Exception as retry_err:
+                    if attempt == 0:
+                        logger.info(f"DeepFace init attempt 1 failed, retrying: {retry_err}")
+                        time.sleep(2)
+                    else:
+                        raise retry_err
         except Exception as e:
             logger.warning(f"DeepFace backend failed: {type(e).__name__}: {e}")
 
@@ -72,6 +89,37 @@ class ExpressionClassifier:
         self._model = None
         self._backend = "none"
         self._initialized = True
+
+    @staticmethod
+    def _ensure_deepface_weights():
+        """Pre-download DeepFace emotion model weights if missing."""
+        import os
+        weights_dir = os.path.join(os.path.expanduser("~"), ".deepface", "weights")
+        weights_file = os.path.join(weights_dir, "facial_expression_model_weights.h5")
+
+        if os.path.exists(weights_file):
+            return
+
+        os.makedirs(weights_dir, exist_ok=True)
+        url = "https://github.com/serengil/deepface_models/releases/download/v1.0/facial_expression_model_weights.h5"
+
+        logger.info(f"Downloading DeepFace emotion model to {weights_file}...")
+        try:
+            import urllib.request
+            urllib.request.urlretrieve(url, weights_file)
+            logger.info("DeepFace emotion model downloaded successfully")
+        except Exception as e:
+            logger.warning(f"Failed to download DeepFace weights: {e}")
+            # Try with requests as fallback
+            try:
+                import requests
+                resp = requests.get(url, timeout=60)
+                resp.raise_for_status()
+                with open(weights_file, "wb") as f:
+                    f.write(resp.content)
+                logger.info("DeepFace emotion model downloaded via requests")
+            except Exception as e2:
+                logger.warning(f"Requests download also failed: {e2}")
 
     def classify(self, face_crop: np.ndarray, timestamp: float = 0.0) -> ExpressionResult:
         """
