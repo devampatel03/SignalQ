@@ -35,24 +35,43 @@ class ExpressionClassifier:
         self.confidence_threshold = config.vision.expression_confidence_threshold
 
     def _lazy_init(self):
-        """Lazy initialization to avoid loading model at import time."""
+        """Lazy initialization — tries FER, then DeepFace, then basic fallback."""
         if self._initialized:
             return
 
+        # Attempt 1: FER library (Keras CNN)
         try:
             from fer import FER
-            # mtcnn=False since we already have face crops
             self._model = FER(mtcnn=False)
+            self._backend = "fer"
             self._initialized = True
-            logger.info("FER expression classifier initialized")
-        except ImportError:
-            logger.warning(
-                "FER library not installed. Install with: pip install fer"
-            )
-            self._initialized = True  # Don't retry
+            logger.info("FER expression classifier initialized (fer backend)")
+            return
         except Exception as e:
-            logger.error(f"Failed to initialize FER: {e}")
+            logger.warning(f"FER backend failed: {type(e).__name__}: {e}")
+
+        # Attempt 2: DeepFace (works well on Colab)
+        try:
+            from deepface import DeepFace
+            # Test that it works with a dummy image
+            _test = np.zeros((48, 48, 3), dtype=np.uint8)
+            DeepFace.analyze(_test, actions=["emotion"], enforce_detection=False, silent=True)
+            self._model = DeepFace
+            self._backend = "deepface"
             self._initialized = True
+            logger.info("FER expression classifier initialized (deepface backend)")
+            return
+        except Exception as e:
+            logger.warning(f"DeepFace backend failed: {type(e).__name__}: {e}")
+
+        # Attempt 3: No ML model available — use basic heuristic fallback
+        logger.warning(
+            "No FER backend available. Using basic fallback. "
+            "Install with: pip install fer  OR  pip install deepface"
+        )
+        self._model = None
+        self._backend = "none"
+        self._initialized = True
 
     def classify(self, face_crop: np.ndarray, timestamp: float = 0.0) -> ExpressionResult:
         """
@@ -71,48 +90,102 @@ class ExpressionClassifier:
             return self._fallback_result(timestamp)
 
         try:
-            # FER expects BGR format
-            import cv2
-            bgr_crop = cv2.cvtColor(face_crop, cv2.COLOR_RGB2BGR)
+            if self._backend == "deepface":
+                return self._classify_deepface(face_crop, timestamp)
+            else:
+                return self._classify_fer(face_crop, timestamp)
+        except Exception as e:
+            logger.debug(f"Expression classification error: {e}")
+            return self._fallback_result(timestamp)
 
-            # Analyze expression
-            result = self._model.detect_emotions(bgr_crop)
+    def _classify_deepface(self, face_crop: np.ndarray, timestamp: float) -> ExpressionResult:
+        """Classify using DeepFace backend."""
+        import cv2
+        bgr_crop = cv2.cvtColor(face_crop, cv2.COLOR_RGB2BGR)
 
-            if not result or len(result) == 0:
-                return self._fallback_result(timestamp)
+        result = self._model.analyze(
+            bgr_crop,
+            actions=["emotion"],
+            enforce_detection=False,
+            silent=True,
+        )
 
-            # Take the first (and usually only) face result
-            emotions = result[0].get("emotions", {})
+        if isinstance(result, list):
+            result = result[0]
 
-            if not emotions:
-                return self._fallback_result(timestamp)
+        emotions = result.get("emotion", {})
+        if not emotions:
+            return self._fallback_result(timestamp)
 
-            # Map FER emotion names to our Emotion enum
-            mapped = self._map_emotions(emotions)
+        # DeepFace returns percentages (0-100), normalize to 0-1
+        mapped = {}
+        for k, v in emotions.items():
+            emotion_key = k.lower()
+            try:
+                mapped[Emotion(emotion_key).value] = v / 100.0
+            except ValueError:
+                pass
 
-            # Find dominant emotion
-            dominant = max(mapped, key=mapped.get)
-            confidence = mapped[dominant]
+        if not mapped:
+            return self._fallback_result(timestamp)
 
-            # Suppress low-confidence detections
-            if confidence < self.confidence_threshold:
-                return ExpressionResult(
-                    dominant_emotion=Emotion.NEUTRAL,
-                    confidence=confidence,
-                    all_emotions=mapped,
-                    timestamp=timestamp,
-                )
+        dominant = max(mapped, key=mapped.get)
+        confidence = mapped[dominant]
 
+        if confidence < self.confidence_threshold:
             return ExpressionResult(
-                dominant_emotion=Emotion(dominant),
+                dominant_emotion=Emotion.NEUTRAL,
                 confidence=confidence,
                 all_emotions=mapped,
                 timestamp=timestamp,
             )
 
-        except Exception as e:
-            logger.debug(f"Expression classification error: {e}")
+        return ExpressionResult(
+            dominant_emotion=Emotion(dominant),
+            confidence=confidence,
+            all_emotions=mapped,
+            timestamp=timestamp,
+        )
+
+    def _classify_fer(self, face_crop: np.ndarray, timestamp: float) -> ExpressionResult:
+        """Classify using FER library backend."""
+        import cv2
+        bgr_crop = cv2.cvtColor(face_crop, cv2.COLOR_RGB2BGR)
+
+        # Analyze expression
+        result = self._model.detect_emotions(bgr_crop)
+
+        if not result or len(result) == 0:
             return self._fallback_result(timestamp)
+
+        # Take the first (and usually only) face result
+        emotions = result[0].get("emotions", {})
+
+        if not emotions:
+            return self._fallback_result(timestamp)
+
+        # Map FER emotion names to our Emotion enum
+        mapped = self._map_emotions(emotions)
+
+        # Find dominant emotion
+        dominant = max(mapped, key=mapped.get)
+        confidence = mapped[dominant]
+
+        # Suppress low-confidence detections
+        if confidence < self.confidence_threshold:
+            return ExpressionResult(
+                dominant_emotion=Emotion.NEUTRAL,
+                confidence=confidence,
+                all_emotions=mapped,
+                timestamp=timestamp,
+            )
+
+        return ExpressionResult(
+            dominant_emotion=Emotion(dominant),
+            confidence=confidence,
+            all_emotions=mapped,
+            timestamp=timestamp,
+        )
 
     def _map_emotions(self, fer_emotions: dict) -> dict[str, float]:
         """Map FER library emotion names to our Emotion enum values."""
