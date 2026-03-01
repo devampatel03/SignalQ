@@ -225,6 +225,50 @@ async def websocket_signals(ws: WebSocket):
         logger.info(f"WebSocket disconnected (total: {len(connected_websockets)})")
 
 
+# ── Token Generation (for testing) ───────────
+
+@app.post("/api/token")
+async def generate_token(user_id: str = "prospect-user"):
+    """Generate a Stream user token for testing."""
+    import hashlib
+    import hmac
+    import base64
+    import time
+
+    api_key = os.environ.get("STREAM_API_KEY", "")
+    api_secret = os.environ.get("STREAM_API_SECRET", "")
+
+    if not api_key or not api_secret or "your_" in api_key:
+        raise HTTPException(
+            status_code=500,
+            detail="STREAM_API_KEY and STREAM_API_SECRET not configured in .env",
+        )
+
+    def b64url(data: bytes) -> str:
+        return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+    header = {"alg": "HS256", "typ": "JWT"}
+    now = int(time.time())
+    payload = {"user_id": user_id, "iat": now, "exp": now + 86400}
+
+    header_b64 = b64url(json.dumps(header).encode())
+    payload_b64 = b64url(json.dumps(payload).encode())
+    signature = hmac.new(
+        api_secret.encode(),
+        f"{header_b64}.{payload_b64}".encode(),
+        hashlib.sha256,
+    ).digest()
+
+    token = f"{header_b64}.{payload_b64}.{b64url(signature)}"
+
+    return {
+        "token": token,
+        "user_id": user_id,
+        "api_key": api_key,
+        "expires_in": 86400,
+    }
+
+
 # ── Health Check ─────────────────────────────
 
 @app.get("/health")

@@ -2,6 +2,7 @@ import { Routes, Route, Link, useLocation } from 'react-router-dom'
 import LiveCall from './pages/LiveCall'
 import Debrief from './pages/Debrief'
 import Dashboard from './pages/Dashboard'
+import TestCall from './pages/TestCall'
 
 function App() {
     const location = useLocation()
@@ -36,6 +37,12 @@ function App() {
                     >
                         Debrief
                     </Link>
+                    <Link
+                        to="/test-call"
+                        className={`nav-link ${location.pathname === '/test-call' ? 'active' : ''}`}
+                    >
+                        🧪 Test
+                    </Link>
                 </div>
             </nav>
 
@@ -46,6 +53,7 @@ function App() {
                     <Route path="/live" element={<LiveCall />} />
                     <Route path="/debrief" element={<Debrief />} />
                     <Route path="/debrief/:sessionId" element={<Debrief />} />
+                    <Route path="/test-call" element={<TestCall />} />
                 </Routes>
             </div>
         </div>
