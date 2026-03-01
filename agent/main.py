@@ -122,16 +122,17 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
     # Stream server-side auth requires created_by_id to reference a valid user.
     try:
         from getstream import Stream
+        from getstream.models import UserRequest
         stream_client = Stream(
             api_key=os.environ.get("STREAM_API_KEY", ""),
             api_secret=os.environ.get("STREAM_API_SECRET", ""),
         )
         stream_client.upsert_users(
-            {
-                "id": config.agent_id,
-                "name": config.agent_name,
-                "role": "admin",
-            }
+            UserRequest(
+                id=config.agent_id,
+                name=config.agent_name,
+                role="admin",
+            )
         )
         logger.info(f"Upserted agent user: {config.agent_id}")
     except Exception as e:
