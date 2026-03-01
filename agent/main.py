@@ -110,12 +110,28 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
     Called when the agent should join a video call.
 
     This is the Vision Agents lifecycle pattern:
-    1. Create a call reference
-    2. Join the call
-    3. Agent processes frames and generates whispers automatically
-    4. Agent finishes when the call ends
+    1. Upsert agent user (Stream requires it for server-side auth)
+    2. Create a call reference
+    3. Join the call
+    4. Agent processes frames and generates whispers automatically
+    5. Agent finishes when the call ends
     """
     logger.info(f"SignalIQ joining call: {call_type}/{call_id}")
+
+    # Ensure the agent user exists in Stream before creating a call.
+    # Stream server-side auth requires created_by_id to reference a valid user.
+    try:
+        stream_client = agent.edge._client  # Access the underlying Stream client
+        stream_client.upsert_users(
+            {
+                "id": config.agent_id,
+                "name": config.agent_name,
+                "role": "admin",
+            }
+        )
+        logger.info(f"Upserted agent user: {config.agent_id}")
+    except Exception as e:
+        logger.warning(f"Could not upsert agent user (may already exist): {e}")
 
     call = await agent.create_call(call_type, call_id)
 

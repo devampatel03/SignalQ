@@ -1,13 +1,5 @@
 import {
-    LineChart,
-    Line,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-    ReferenceLine,
-    ReferenceArea,
+    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine
 } from 'recharts'
 
 interface TimelinePoint {
@@ -23,49 +15,32 @@ interface DebriefTimelineProps {
     winningMoments?: Array<{ timestamp: number; label: string }>
 }
 
-/**
- * Interactive engagement timeline chart with annotated moments.
- * This is the visual centerpiece of the debrief page.
- */
-export default function DebriefTimeline({
-    data,
-    criticalMoments = [],
-    winningMoments = [],
-}: DebriefTimelineProps) {
-    const formatTime = (ts: number) => {
-        const mins = Math.floor(ts / 60)
-        const secs = Math.floor(ts % 60)
-        return `${mins}:${secs.toString().padStart(2, '0')}`
-    }
+export default function DebriefTimeline({ data, criticalMoments = [], winningMoments = [] }: DebriefTimelineProps) {
+    const fmt = (ts: number) => `${Math.floor(ts / 60)}:${(ts % 60).toString().padStart(2, '0')}`
 
-    const CustomTooltip = ({ active, payload, label }: any) => {
+    const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
-            const point = payload[0].payload
+            const p = payload[0].payload
             return (
                 <div style={{
-                    background: 'rgba(10, 10, 15, 0.95)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    borderRadius: 8,
-                    padding: '10px 14px',
-                    fontSize: 13,
+                    background: 'rgba(28,28,30,0.85)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+                    border: '0.5px solid rgba(255,255,255,0.1)', borderRadius: 12, padding: '12px 16px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.5)', color: '#fff'
                 }}>
-                    <div style={{ color: '#8888a0', marginBottom: 4 }}>
-                        {formatTime(point.timestamp)}
+                    <div style={{ fontSize: 11, color: 'var(--text-secondary)', fontWeight: 600, letterSpacing: 0.5, marginBottom: 8 }}>
+                        {fmt(p.timestamp)}
                     </div>
-                    <div style={{ fontWeight: 600 }}>
-                        Engagement: <span style={{
-                            color: point.engagement_score >= 70 ? '#22c55e'
-                                : point.engagement_score >= 40 ? '#eab308' : '#ef4444'
-                        }}>{Math.round(point.engagement_score)}</span>
+                    <div style={{ fontSize: 24, fontWeight: 300, fontFeatureSettings: '"tnum"', letterSpacing: -1, lineHeight: 1 }}>
+                        {Math.round(p.engagement_score)}
                     </div>
-                    {point.emotion && point.emotion !== 'neutral' && (
-                        <div style={{ color: '#8888a0', marginTop: 2 }}>
-                            Emotion: {point.emotion}
+                    {p.emotion && p.emotion !== 'neutral' && (
+                        <div style={{ fontSize: 13, marginTop: 8, color: 'var(--text-secondary)' }}>
+                            Emotion: <span style={{ color: '#fff', textTransform: 'capitalize' }}>{p.emotion}</span>
                         </div>
                     )}
-                    {point.signal_type && (
-                        <div style={{ color: '#6366f1', marginTop: 2 }}>
-                            Signal: {point.signal_type}
+                    {p.signal_type && (
+                        <div style={{ fontSize: 13, marginTop: 4, color: 'var(--apple-blue)' }}>
+                            {p.signal_type.replace('_', ' ')}
                         </div>
                     )}
                 </div>
@@ -75,85 +50,32 @@ export default function DebriefTimeline({
     }
 
     return (
-        <div style={{ width: '100%', height: 280 }}>
+        <div style={{ width: '100%', height: 240 }}>
             <ResponsiveContainer>
-                <LineChart data={data} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
-                    <CartesianGrid
-                        strokeDasharray="3 3"
-                        stroke="rgba(255,255,255,0.04)"
-                        vertical={false}
-                    />
+                <LineChart data={data} margin={{ top: 20, right: 0, bottom: 0, left: -20 }}>
+                    <CartesianGrid stroke="var(--separator-light)" vertical={false} />
                     <XAxis
-                        dataKey="timestamp"
-                        tickFormatter={formatTime}
-                        stroke="#555570"
-                        fontSize={11}
-                        tickLine={false}
+                        dataKey="timestamp" tickFormatter={fmt}
+                        stroke="var(--text-tertiary)" fontSize={11} tickLine={false} axisLine={false} dy={10}
                     />
                     <YAxis
-                        domain={[0, 100]}
-                        stroke="#555570"
-                        fontSize={11}
-                        tickLine={false}
-                        ticks={[0, 25, 50, 75, 100]}
+                        domain={[0, 100]} stroke="var(--text-tertiary)"
+                        fontSize={11} tickLine={false} axisLine={false} dx={-10} ticks={[0, 50, 100]}
                     />
-                    <Tooltip content={<CustomTooltip />} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1, strokeDasharray: '4 4' }} />
 
-                    {/* Danger zone */}
-                    <ReferenceArea y1={0} y2={35} fill="rgba(239, 68, 68, 0.03)" />
-
-                    {/* Engagement threshold line */}
-                    <ReferenceLine
-                        y={50}
-                        stroke="rgba(255,255,255,0.08)"
-                        strokeDasharray="3 3"
-                    />
-
-                    {/* Critical moments */}
                     {criticalMoments.map((m, i) => (
-                        <ReferenceLine
-                            key={`crit-${i}`}
-                            x={m.timestamp}
-                            stroke="#ef4444"
-                            strokeDasharray="4 4"
-                            strokeWidth={1.5}
-                        />
+                        <ReferenceLine key={`crit-${i}`} x={m.timestamp} stroke="var(--apple-red)" strokeWidth={1} strokeDasharray="3 3" />
                     ))}
-
-                    {/* Winning moments */}
                     {winningMoments.map((m, i) => (
-                        <ReferenceLine
-                            key={`win-${i}`}
-                            x={m.timestamp}
-                            stroke="#22c55e"
-                            strokeDasharray="4 4"
-                            strokeWidth={1.5}
-                        />
+                        <ReferenceLine key={`win-${i}`} x={m.timestamp} stroke="var(--apple-green)" strokeWidth={1} strokeDasharray="3 3" />
                     ))}
 
-                    {/* Main engagement line */}
                     <Line
-                        type="monotone"
-                        dataKey="engagement_score"
-                        stroke="url(#engagementGradient)"
-                        strokeWidth={2.5}
-                        dot={false}
-                        activeDot={{
-                            r: 5,
-                            fill: '#6366f1',
-                            stroke: 'rgba(99, 102, 241, 0.3)',
-                            strokeWidth: 6,
-                        }}
+                        type="monotone" dataKey="engagement_score" stroke="var(--apple-blue)"
+                        strokeWidth={3} dot={false}
+                        activeDot={{ r: 6, fill: 'var(--apple-blue)', stroke: '#fff', strokeWidth: 2 }}
                     />
-
-                    {/* Gradient definition */}
-                    <defs>
-                        <linearGradient id="engagementGradient" x1="0" y1="0" x2="1" y2="0">
-                            <stop offset="0%" stopColor="#6366f1" />
-                            <stop offset="50%" stopColor="#818cf8" />
-                            <stop offset="100%" stopColor="#6366f1" />
-                        </linearGradient>
-                    </defs>
                 </LineChart>
             </ResponsiveContainer>
         </div>

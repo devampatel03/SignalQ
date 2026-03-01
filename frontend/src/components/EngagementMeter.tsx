@@ -1,74 +1,61 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 
 interface EngagementMeterProps {
     score: number
     size?: number
-    showLabel?: boolean
 }
 
 /**
- * Real-time engagement gauge with animated SVG ring.
- * Color transitions: red (0-39) → yellow (40-69) → green (70-100)
+ * Apple Watch Activity Ring style Engagement Meter.
+ * Rounded caps, pure black background (handled by container), bright neon gradient potential.
  */
-export default function EngagementMeter({
-    score,
-    size = 160,
-    showLabel = true,
-}: EngagementMeterProps) {
-    const [animatedScore, setAnimatedScore] = useState(score)
+export default function EngagementMeter({ score, size = 180 }: EngagementMeterProps) {
+    const [animated, setAnimated] = useState(score)
 
-    // Smooth animation on score change
     useEffect(() => {
-        const timer = setTimeout(() => setAnimatedScore(score), 50)
-        return () => clearTimeout(timer)
+        const t = setTimeout(() => setAnimated(score), 50)
+        return () => clearTimeout(t)
     }, [score])
 
-    const radius = (size - 16) / 2
-    const circumference = 2 * Math.PI * radius
-    const offset = circumference - (animatedScore / 100) * circumference
+    // Apple Watch rings are usually thicker (around 12-16px)
+    const strokeWidth = 14
+    const r = (size - strokeWidth * 2) / 2
+    const c = 2 * Math.PI * r
+    const offset = c - (animated / 100) * c
 
-    const getColor = (s: number) => {
-        if (s >= 70) return '#22c55e'
-        if (s >= 40) return '#eab308'
-        return '#ef4444'
-    }
-
-    const getGlow = (s: number) => {
-        if (s >= 70) return '0 0 20px rgba(34, 197, 94, 0.3)'
-        if (s >= 40) return '0 0 20px rgba(234, 179, 8, 0.2)'
-        return '0 0 20px rgba(239, 68, 68, 0.3)'
-    }
-
-    const color = getColor(animatedScore)
+    // Apple system colors for rings
+    const color =
+        animated >= 70 ? 'var(--apple-green)' :
+            animated >= 40 ? 'var(--apple-yellow)' : 'var(--apple-red)'
 
     return (
-        <div className="engagement-meter" style={{ width: size, height: size }}>
-            <div className="engagement-ring" style={{ filter: `drop-shadow(${getGlow(animatedScore)})` }}>
-                <svg viewBox={`0 0 ${size} ${size}`}>
-                    {/* Background ring */}
-                    <circle
-                        className="ring-bg"
-                        cx={size / 2}
-                        cy={size / 2}
-                        r={radius}
-                    />
-                    {/* Active ring */}
-                    <circle
-                        cx={size / 2}
-                        cy={size / 2}
-                        r={radius}
-                        stroke={color}
-                        strokeDasharray={circumference}
-                        strokeDashoffset={offset}
-                        style={{ transition: 'stroke-dashoffset 0.8s ease, stroke 0.5s ease' }}
-                    />
-                </svg>
-            </div>
-            <div className="engagement-value">
-                <div className="score" style={{ color }}>
-                    {Math.round(animatedScore)}
-                </div>
-                {showLabel && <div className="label">Engagement</div>}
+        <div className="activity-ring-container" style={{ width: size, height: size }}>
+            <svg viewBox={`0 0 ${size} ${size}`} style={{ filter: `drop-shadow(0 0 16px ${color}40)` }}>
+                {/* Background Track (semi-transparent of the active color) */}
+                <circle
+                    cx={size / 2} cy={size / 2} r={r}
+                    fill="none"
+                    stroke={`${color}20`}
+                    strokeWidth={strokeWidth}
+                />
+                {/* Active Ring Fill */}
+                <circle
+                    cx={size / 2} cy={size / 2} r={r}
+                    fill="none"
+                    stroke={color}
+                    strokeWidth={strokeWidth}
+                    strokeLinecap="round" // Apple Watch signature rounded ends
+                    strokeDasharray={c}
+                    strokeDashoffset={offset}
+                    transform={`rotate(-90 ${size / 2} ${size / 2})`}
+                    style={{ transition: 'stroke-dashoffset 1s cubic-bezier(0.34, 1.56, 0.64, 1), stroke 0.4s ease' }}
+                />
+            </svg>
+
+            {/* Floating typography in center */}
+            <div className="watch-score">
+                <span className="num" style={{ color }}>{Math.round(animated)}</span>
+                <span className="lbl" style={{ color: `${color}80` }}>ENGAGE</span>
             </div>
         </div>
     )

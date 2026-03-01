@@ -1,63 +1,49 @@
 import { Routes, Route, Link, useLocation } from 'react-router-dom'
+import Dashboard from './pages/Dashboard'
 import LiveCall from './pages/LiveCall'
 import Debrief from './pages/Debrief'
-import Dashboard from './pages/Dashboard'
 import TestCall from './pages/TestCall'
 
-function App() {
-    const location = useLocation()
+export default function App() {
+    const loc = useLocation()
 
     return (
-        <div>
-            {/* Navigation Bar */}
-            <nav className="nav-bar">
-                <div className="nav-logo">
-                    <span className="logo-signal">Signal</span>
-                    <span className="logo-iq">IQ</span>
-                </div>
-                <div className="nav-links">
-                    <Link
-                        to="/"
-                        className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-                    >
-                        Dashboard
-                    </Link>
-                    <Link
-                        to="/live"
-                        className={`nav-link ${location.pathname === '/live' ? 'active' : ''}`}
-                    >
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                            <span className="live-dot" />
+        <div className="app-container">
+            {/* ── Apple-Inspired Floating Navigation ── */}
+            <div className="nav-container">
+                <div className="nav-bar">
+                    <div className="nav-logo">
+                        Signal<span style={{ color: '#8E8E93' }}>IQ</span>
+                    </div>
+                    <div className="nav-links">
+                        <Link
+                            to="/"
+                            className={`nav-link ${loc.pathname === '/' ? 'active' : ''}`}
+                        >
+                            Dashboard
+                        </Link>
+                        <Link
+                            to="/live"
+                            className={`nav-link ${loc.pathname === '/live' ? 'active' : ''}`}
+                        >
                             Live Call
-                        </span>
-                    </Link>
-                    <Link
-                        to="/debrief"
-                        className={`nav-link ${location.pathname.startsWith('/debrief') ? 'active' : ''}`}
-                    >
-                        Debrief
-                    </Link>
-                    <Link
-                        to="/test-call"
-                        className={`nav-link ${location.pathname === '/test-call' ? 'active' : ''}`}
-                    >
-                        🧪 Test
-                    </Link>
+                        </Link>
+                        <Link
+                            to="/test-call"
+                            className={`nav-link ${loc.pathname === '/test-call' ? 'active' : ''}`}
+                        >
+                            Test Setup
+                        </Link>
+                    </div>
                 </div>
-            </nav>
-
-            {/* Routes */}
-            <div className="app-container">
-                <Routes>
-                    <Route path="/" element={<Dashboard />} />
-                    <Route path="/live" element={<LiveCall />} />
-                    <Route path="/debrief" element={<Debrief />} />
-                    <Route path="/debrief/:sessionId" element={<Debrief />} />
-                    <Route path="/test-call" element={<TestCall />} />
-                </Routes>
             </div>
+
+            <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/live" element={<LiveCall />} />
+                <Route path="/debrief/:sessionId" element={<Debrief />} />
+                <Route path="/test-call" element={<TestCall />} />
+            </Routes>
         </div>
     )
 }
-
-export default App

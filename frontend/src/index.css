@@ -1,478 +1,476 @@
-/* ──────────────────────────────────────────────
-   SignalIQ — Global Styles
-   Premium dark theme with glassmorphism and
-   dynamic color system for engagement visualization
-   ────────────────────────────────────────────── */
+/* ═══════════════════════════════════════════════════════
+   SignalIQ — Apple-Inspired Native UI Design System
+   Pure black OLED backgrounds, true frosted glass (vibrancy),
+   extreme typographic contrast, SF Pro aesthetic.
+   ═══════════════════════════════════════════════════════ */
 
+/* Replicating San Francisco with system fonts */
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+/* ── Apple Design Tokens ──────────────────────────── */
 :root {
-  /* Color System */
-  --bg-primary: #0a0a0f;
-  --bg-secondary: #12121a;
-  --bg-card: rgba(20, 20, 30, 0.8);
-  --bg-glass: rgba(255, 255, 255, 0.03);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-active: rgba(99, 102, 241, 0.3);
+  /* True Dark Mode (OLED) */
+  --bg-base: #000000;
+  --bg-elevated: #1C1C1E;
+  /* iOS native modal dark */
+  --bg-surface: #2C2C2E;
 
-  --text-primary: #f0f0f5;
-  --text-secondary: #8888a0;
-  --text-muted: #555570;
+  /* Vibrancy (Apple Frosted Glass) */
+  --vibrancy-base: rgba(28, 28, 30, 0.4);
+  --vibrancy-thick: rgba(28, 28, 30, 0.7);
+  --vibrancy-bright: rgba(255, 255, 255, 0.05);
 
-  /* Engagement Colors */
-  --engagement-high: #22c55e;
-  --engagement-mid: #eab308;
-  --engagement-low: #ef4444;
+  /* Apple System Colors */
+  --apple-blue: #0A84FF;
+  --apple-green: #30D158;
+  --apple-red: #FF453A;
+  --apple-orange: #FF9F0A;
+  --apple-yellow: #FFD60A;
+  --apple-purple: #BF5AF2;
 
-  /* Accent */
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.15);
-  --accent-bright: #818cf8;
+  /* Text hierarchy (Stark contrast) */
+  --text-primary: #FFFFFF;
+  --text-secondary: rgba(235, 235, 245, 0.6);
+  /* iOS label-secondary */
+  --text-tertiary: rgba(235, 235, 245, 0.3);
+  /* iOS label-tertiary */
 
-  /* Signal Colors */
-  --signal-interest: #22c55e;
-  --signal-doubt: #f97316;
-  --signal-confusion: #eab308;
-  --signal-danger: #ef4444;
-  --signal-agreement: #06b6d4;
+  /* Hairlines and separators */
+  --separator: rgba(84, 84, 88, 0.65);
+  /* iOS opaque separator */
+  --separator-light: rgba(255, 255, 255, 0.08);
+
+  /* iOS Squircles */
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 32px;
 
   /* Typography */
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-
-  /* Spacing */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'Space Mono', "SF Mono", monospace;
 }
 
-* {
+/* ── Reset & Base ─────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  box-sizing: border-box;
 }
 
-body {
-  font-family: var(--font);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  min-height: 100vh;
+html {
+  font-size: 16px;
+  /* Native sizes */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* ── Glass Card ─────────────────────────────── */
-.glass-card {
-  background: var(--bg-card);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  transition: all 0.3s ease;
+body {
+  font-family: var(--font-sans);
+  background: var(--bg-base);
+  color: var(--text-primary);
+  line-height: 1.4;
+  min-height: 100vh;
+  overscroll-behavior-y: none;
+  /* iOS bounce lock */
 }
 
-.glass-card:hover {
-  border-color: var(--border-active);
-  box-shadow: 0 0 30px var(--accent-glow);
-}
-
-/* ── Layout ─────────────────────────────────── */
-.app-container {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-.page-header {
+#root {
+  min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 32px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border-subtle);
+  flex-direction: column;
 }
 
-.page-title {
-  font-size: 28px;
-  font-weight: 700;
-  background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-bright) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.page-subtitle {
-  color: var(--text-secondary);
-  font-size: 14px;
-  margin-top: 4px;
-}
-
-/* ── Navigation ─────────────────────────────── */
-.nav-bar {
+/* ── Navigation (macOS/iPadOS Floating Tab Bar) ───── */
+.nav-container {
+  position: fixed;
+  top: 16px;
+  left: 0;
+  right: 0;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 12px 24px;
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-subtle);
-  position: sticky;
-  top: 0;
+  justify-content: center;
   z-index: 100;
+  pointer-events: none;
+}
+
+.nav-bar {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+  height: 48px;
+  padding: 0 20px 0 16px;
+  background: var(--vibrancy-thick);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: var(--radius-xl);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .nav-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  font-size: 20px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-.nav-logo .logo-signal {
-  color: var(--accent-bright);
-}
-
-.nav-logo .logo-iq {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
   color: var(--text-primary);
+  user-select: none;
+  margin-right: 12px;
 }
 
 .nav-links {
   display: flex;
-  gap: 4px;
-  margin-left: auto;
+  align-items: center;
+  gap: 8px;
 }
 
 .nav-link {
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
+  padding: 6px 14px;
+  border-radius: 100px;
+  /* Full pill */
   color: var(--text-secondary);
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  transition: all 0.2s;
+  letter-spacing: -0.2px;
+  transition: all 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-.nav-link:hover,
-.nav-link.active {
+.nav-link:hover {
   color: var(--text-primary);
-  background: var(--bg-glass);
 }
 
-/* ── Engagement Meter ───────────────────────── */
-.engagement-meter {
-  width: 160px;
-  height: 160px;
+.nav-link.active {
+  color: #000;
+  background: var(--text-primary);
+}
+
+/* ── App Container ────────────────────────────────── */
+.app-container {
+  flex: 1;
+  padding: 96px 32px 32px;
+  /* Pad top for floating nav */
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ── Typography Elements (Apple Extreme Contrast) ─── */
+.page-title {
+  font-size: 34px;
+  /* iOS Large Title */
+  font-weight: 700;
+  letter-spacing: -0.8px;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.page-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  letter-spacing: -0.2px;
+}
+
+.section-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+}
+
+/* ── Apple-Style Stat Display ─────────────────────── */
+.stat-hero {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-hero .value {
+  font-size: 48px;
+  font-weight: 300;
+  /* Ultra thin large numbers */
+  letter-spacing: -1.5px;
+  line-height: 1;
+  font-feature-settings: "tnum";
+}
+
+.stat-hero .label {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+/* ── Unified iOS List Table ───────────────────────── */
+.ios-list {
+  background: var(--bg-elevated);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.ios-list-row {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  position: relative;
+  transition: background 0.2s ease;
+  cursor: pointer;
+}
+
+.ios-list-row:hover {
+  background: var(--vibrancy-bright);
+}
+
+.ios-list-row:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 20px;
+  /* Indented separator */
+  right: 0;
+  height: 0.5px;
+  background: var(--separator);
+}
+
+/* ── Live Call Cinematic Layout ───────────────────── */
+.live-cinematic {
+  position: relative;
+  width: 100%;
+  height: calc(100vh - 140px);
+  min-height: 600px;
+  background: #000;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 0.5px solid var(--separator-light);
+}
+
+.live-video-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.live-video-layer video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.8;
+  /* Slight dim for overlay legibility */
+}
+
+/* Floating Vibrancy Panels over video */
+.hud-panel {
+  position: absolute;
+  background: var(--vibrancy-base);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: var(--radius-lg);
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  padding: 24px;
+}
+
+.hud-left {
+  left: 24px;
+  bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.hud-right {
+  right: 24px;
+  top: 24px;
+  bottom: 24px;
+  width: 320px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── Apple Watch Style Ring ───────────────────────── */
+.activity-ring-container {
   position: relative;
   display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.watch-score {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-.engagement-ring {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  position: relative;
-}
-
-.engagement-ring svg {
-  width: 100%;
-  height: 100%;
-  transform: rotate(-90deg);
-}
-
-.engagement-ring circle {
-  fill: none;
-  stroke-width: 6;
-  stroke-linecap: round;
-  transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease;
-}
-
-.engagement-ring .ring-bg {
-  stroke: rgba(255, 255, 255, 0.05);
-}
-
-.engagement-value {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  text-align: center;
-}
-
-.engagement-value .score {
-  font-size: 36px;
-  font-weight: 800;
+.watch-score .num {
+  font-size: 40px;
+  font-weight: 500;
   letter-spacing: -2px;
   line-height: 1;
 }
 
-.engagement-value .label {
-  font-size: 10px;
+.watch-score .lbl {
+  font-size: 11px;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--text-muted);
+  color: var(--text-secondary);
+  letter-spacing: 0.4px;
   margin-top: 4px;
 }
 
-/* ── Whisper Feed ───────────────────────────── */
-.whisper-feed {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.whisper-item {
-  padding: 12px 16px;
+/* ── iOS Notification Style Whisper ───────────────── */
+.ios-notification {
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: var(--radius-md);
-  background: var(--bg-glass);
-  border-left: 3px solid var(--accent);
-  font-size: 14px;
-  line-height: 1.5;
-  animation: whisperIn 0.5s ease;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  border: 0.5px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
-.whisper-item .whisper-time {
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.notif-app {
   font-size: 11px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.whisper-item .whisper-text {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-@keyframes whisperIn {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-/* ── Signal Timeline ────────────────────────── */
-.signal-badge {
-  display: inline-flex;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  display: flex;
   align-items: center;
   gap: 6px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
 }
 
-.signal-badge.interest {
-  background: rgba(34, 197, 94, 0.12);
-  color: var(--signal-interest);
+.notif-time {
+  font-size: 11px;
+  color: var(--text-tertiary);
 }
 
-.signal-badge.doubt {
-  background: rgba(249, 115, 22, 0.12);
-  color: var(--signal-doubt);
+.notif-body {
+  font-size: 14px;
+  line-height: 1.4;
+  font-weight: 400;
 }
 
-.signal-badge.confusion {
-  background: rgba(234, 179, 8, 0.12);
-  color: var(--signal-confusion);
-}
-
-.signal-badge.danger {
-  background: rgba(239, 68, 68, 0.12);
-  color: var(--signal-danger);
-}
-
-.signal-badge.agreement {
-  background: rgba(6, 182, 212, 0.12);
-  color: var(--signal-agreement);
-}
-
-/* ── Live Overlay ───────────────────────────── */
-.live-overlay {
-  position: fixed;
-  bottom: 24px;
-  right: 24px;
-  width: 320px;
-  padding: 20px;
-  z-index: 1000;
-  animation: slideUp 0.5s ease;
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* ── Debrief Timeline ───────────────────────── */
-.timeline-moment {
-  display: flex;
-  gap: 16px;
-  padding: 16px;
-  border-radius: var(--radius-md);
-  background: var(--bg-glass);
-  border: 1px solid var(--border-subtle);
-  margin-bottom: 12px;
-  transition: all 0.2s;
-}
-
-.timeline-moment:hover {
-  border-color: var(--border-active);
-}
-
-.timeline-moment .moment-time {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-muted);
-  white-space: nowrap;
-  min-width: 50px;
-}
-
-.timeline-moment .moment-content {
-  flex: 1;
-}
-
-.timeline-moment .moment-title {
-  font-weight: 600;
-  margin-bottom: 4px;
-}
-
-.timeline-moment .moment-insight {
-  font-size: 13px;
-  color: var(--text-secondary);
-  line-height: 1.5;
-  font-style: italic;
-}
-
-.timeline-moment.critical {
-  border-left: 3px solid var(--signal-danger);
-}
-
-.timeline-moment.winning {
-  border-left: 3px solid var(--signal-interest);
-}
-
-/* ── Buttons ────────────────────────────────── */
+/* ── Native Buttons ───────────────────────────────── */
 .btn {
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
+  padding: 10px 18px;
+  border-radius: 100px;
+  border: none;
+  font-family: var(--font-sans);
   font-size: 14px;
   font-weight: 600;
+  letter-spacing: -0.2px;
   cursor: pointer;
-  transition: all 0.2s;
-  border: none;
-  font-family: var(--font);
+  transition: opacity 0.2s, transform 0.1s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.btn:active {
+  transform: scale(0.96);
 }
 
 .btn-primary {
-  background: var(--accent);
-  color: white;
+  background: var(--text-primary);
+  color: #000;
 }
 
-.btn-primary:hover {
-  background: var(--accent-bright);
-  box-shadow: 0 0 20px var(--accent-glow);
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-subtle);
-}
-
-.btn-ghost:hover {
+.btn-system {
+  background: var(--bg-elevated);
   color: var(--text-primary);
-  border-color: var(--border-active);
 }
 
-/* ── Grid Layouts ───────────────────────────── */
+.btn-blue {
+  background: var(--apple-blue);
+  color: #fff;
+}
+
+.btn-blue:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Inputs (iOS style) ───────────────────────────── */
+.ios-input-group {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  display: flex;
+  overflow: hidden;
+}
+
+.ios-input {
+  background: transparent;
+  border: none;
+  padding: 12px 14px;
+  color: #fff;
+  font-size: 14px;
+  width: 100%;
+  outline: none;
+}
+
+.ios-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.ios-input:not(:last-child) {
+  border-right: 0.5px solid var(--separator-light);
+}
+
+/* ── Utilities ────────────────────────────────────── */
+.text-blue {
+  color: var(--apple-blue);
+}
+
+.text-green {
+  color: var(--apple-green);
+}
+
+.text-red {
+  color: var(--apple-red);
+}
+
+.text-yellow {
+  color: var(--apple-yellow);
+}
+
+.text-orange {
+  color: var(--apple-orange);
+}
+
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--apple-green);
+  box-shadow: 0 0 12px var(--apple-green);
+}
+
+/* ── Grid Basics ──────────────────────────────────── */
 .grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 20px;
+  gap: 24px;
 }
 
 .grid-3 {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 20px;
-}
-
-.grid-sidebar {
-  display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
-  align-items: start;
-}
-
-/* ── Stat Cards ─────────────────────────────── */
-.stat-card {
-  padding: 20px;
-}
-
-.stat-card .stat-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--text-muted);
-  margin-bottom: 8px;
-}
-
-.stat-card .stat-value {
-  font-size: 32px;
-  font-weight: 800;
-  letter-spacing: -1px;
-}
-
-.stat-card .stat-change {
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-.stat-change.positive {
-  color: var(--engagement-high);
-}
-
-.stat-change.negative {
-  color: var(--engagement-low);
-}
-
-/* ── Pulse animation for live indicator ────── */
-.live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--engagement-high);
-  animation: pulse 2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    box-shadow: 0 0 4px var(--engagement-high);
-  }
-  50% {
-    opacity: 0.5;
-    box-shadow: 0 0 12px var(--engagement-high);
-  }
-}
-
-/* ── Responsive ─────────────────────────────── */
-@media (max-width: 768px) {
-  .grid-2, .grid-3 {
-    grid-template-columns: 1fr;
-  }
-  .grid-sidebar {
-    grid-template-columns: 1fr;
-  }
-  .nav-links {
-    display: none;
-  }
 }

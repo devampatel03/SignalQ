@@ -120,7 +120,13 @@ class SignalIQProcessor(VideoProcessorPublisher):
         # Frame counter for logging
         self._frame_count = 0
 
+        # HTTP callback for signal forwarding
+        self._api_url = config.api_callback_url
+        self._http_session = None
+
         logger.info(f"SignalIQProcessor initialized (fps={fps})")
+        if self._api_url:
+            logger.info(f"Signal forwarding enabled → {self._api_url}")
 
     def attach_agent(self, agent):
         """
@@ -168,6 +174,7 @@ class SignalIQProcessor(VideoProcessorPublisher):
         """
         self._frame_count += 1
         timestamp = self._frame_count / self.fps
+        log_this = (self._frame_count % config.log_every_n_frames == 0)
 
         # Step 1: Convert to numpy
         img = frame.to_ndarray(format="rgb24")
@@ -176,6 +183,8 @@ class SignalIQProcessor(VideoProcessorPublisher):
         faces = self.face_detector.detect(img)
 
         if not faces:
+            if log_this:
+                logger.info(f"Frame {self._frame_count}: no faces detected")
             # No faces detected — emit neutral state
             await self._emit_state(SignalState(), timestamp)
             if self._video_track:
@@ -199,7 +208,17 @@ class SignalIQProcessor(VideoProcessorPublisher):
         # Step 4: Update signal aggregator
         signal_state = self.signal_aggregator.update(expressions, timestamp)
 
-        # Step 5: Emit event for Gemini context
+        # Verbose logging
+        if log_this:
+            expr = expressions[0]
+            logger.info(
+                f"Frame {self._frame_count}: {len(faces)} face(s), "
+                f"emotion={expr.dominant_emotion.value} ({expr.confidence:.0%}), "
+                f"engagement={signal_state.engagement_score:.0f}, "
+                f"trajectory={signal_state.energy_trajectory}"
+            )
+
+        # Step 5: Emit event for Gemini context + forward to API
         await self._emit_state(signal_state, timestamp)
 
         # Step 6: Draw annotations on frame
@@ -211,7 +230,7 @@ class SignalIQProcessor(VideoProcessorPublisher):
             await self._video_track.add_frame(new_frame)
 
     async def _emit_state(self, state: SignalState, timestamp: float):
-        """Emit signal state as a Vision Agents event."""
+        """Emit signal state as a Vision Agents event AND forward to API."""
         if self._events:
             import json
             await self._events.emit(SignalIQEvent(
@@ -225,6 +244,52 @@ class SignalIQProcessor(VideoProcessorPublisher):
                 whisper_context=state.whisper_context or "",
                 active_signals=json.dumps(state.active_signals),
             ))
+
+        # Forward to API server via HTTP callback
+        if self._api_url:
+            await self._forward_to_api(state, timestamp)
+
+    async def _forward_to_api(self, state: SignalState, timestamp: float):
+        """POST signal data to the API server for WebSocket broadcast."""
+        import json
+        try:
+            if self._http_session is None:
+                try:
+                    import aiohttp
+                    self._http_session = aiohttp.ClientSession()
+                except ImportError:
+                    import httpx
+                    self._http_session = httpx.AsyncClient()
+
+            payload = {
+                "timestamp": timestamp,
+                "engagement_score": state.engagement_score,
+                "emotion": state.dominant_emotion,
+                "confidence": state.confidence,
+                "trajectory": state.energy_trajectory.value
+                    if hasattr(state.energy_trajectory, 'value')
+                    else str(state.energy_trajectory),
+                "should_whisper": state.should_trigger_whisper,
+                "whisper_context": state.whisper_context or "",
+                "active_signals": state.active_signals,
+            }
+
+            url = f"{self._api_url.rstrip('/')}/api/signals/live"
+
+            if hasattr(self._http_session, 'post'):
+                # aiohttp or httpx
+                resp = await self._http_session.post(
+                    url,
+                    json=payload,
+                    timeout=2,
+                )
+            else:
+                logger.debug("HTTP session type not supported")
+
+        except Exception as e:
+            # Don't let callback failure break the pipeline
+            if self._frame_count % 50 == 0:
+                logger.warning(f"Signal forward failed: {e}")
 
     def _draw_annotations(
         self,

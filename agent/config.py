@@ -5,6 +5,7 @@ All tunable thresholds, model paths, and settings live here.
 Never hardcode thresholds in other modules — import from config.
 """
 
+import os
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -93,6 +94,12 @@ class SignalIQConfig:
     # Agent identity
     agent_name: str = "SignalIQ"
     agent_id: str = "signaliq-agent"
+
+    # Signal forwarding — when set, agent POSTs signals to this URL
+    api_callback_url: str = os.environ.get("SIGNALIQ_API_URL", "")
+
+    # Logging
+    log_every_n_frames: int = 10  # Log frame processing every N frames
 
 
 # Global singleton — import this in other modules

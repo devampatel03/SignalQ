@@ -174,6 +174,52 @@ async def add_signal(req: SignalEventRequest):
     return {"status": "stored"}
 
 
+@app.post("/api/signals/live")
+async def live_signal(data: dict):
+    """
+    Receive live signal data from the agent and broadcast to WebSockets.
+    This is the bridge: Agent (Colab) → API → Frontend (WebSocket).
+    """
+    msg = json.dumps({
+        "type": "signal",
+        "data": {
+            "engagement_score": data.get("engagement_score", 50),
+            "emotion": data.get("emotion", "neutral"),
+            "confidence": data.get("confidence", 0),
+            "trajectory": data.get("trajectory", "stable"),
+            "timestamp": data.get("timestamp", 0),
+            "should_whisper": data.get("should_whisper", False),
+            "whisper_context": data.get("whisper_context", ""),
+            "active_signals": data.get("active_signals", []),
+        },
+    })
+
+    # Broadcast whisper if needed
+    if data.get("should_whisper") and data.get("whisper_context"):
+        whisper_msg = json.dumps({
+            "type": "whisper",
+            "data": {
+                "text": data["whisper_context"],
+                "timestamp": data.get("timestamp", 0),
+                "signal": "ai_coaching",
+            },
+        })
+        for ws in connected_websockets.copy():
+            try:
+                await ws.send_text(whisper_msg)
+            except Exception:
+                connected_websockets.discard(ws)
+
+    # Broadcast signal to all connected frontends
+    for ws in connected_websockets.copy():
+        try:
+            await ws.send_text(msg)
+        except Exception:
+            connected_websockets.discard(ws)
+
+    return {"status": "broadcast", "clients": len(connected_websockets)}
+
+
 @app.get("/api/sessions/{session_id}/signals")
 async def get_signals(session_id: str):
     """Get signal timeline for a session."""

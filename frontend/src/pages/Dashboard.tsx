@@ -1,167 +1,121 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-/**
- * Dashboard — Overview of recent sessions and rep performance.
- */
 export default function Dashboard() {
     const [sessions, setSessions] = useState<any[]>([])
 
-    // Demo sessions
     useEffect(() => {
         setSessions([
             {
-                id: 'demo-1',
-                prospect_name: 'Sarah Kim',
-                prospect_company: 'Acme Corp',
-                rep_name: 'Alex Chen',
-                duration: '47 min',
-                avg_engagement: 71,
-                total_whispers: 3,
-                date: '2024-03-15',
-                status: 'completed',
+                id: 'demo-1', prospect_name: 'Sarah Kim', prospect_company: 'Acme Corp',
+                rep_name: 'Alex Chen', duration: '47m', avg_engagement: 71,
+                total_whispers: 3, date: 'Mar 15, 2024',
             },
             {
-                id: 'demo-2',
-                prospect_name: 'James Torres',
-                prospect_company: 'DataFlow Inc',
-                rep_name: 'Alex Chen',
-                duration: '32 min',
-                avg_engagement: 58,
-                total_whispers: 2,
-                date: '2024-03-14',
-                status: 'completed',
+                id: 'demo-2', prospect_name: 'James Torres', prospect_company: 'DataFlow Inc',
+                rep_name: 'Alex Chen', duration: '32m', avg_engagement: 58,
+                total_whispers: 2, date: 'Mar 14, 2024',
             },
             {
-                id: 'demo-3',
-                prospect_name: 'Lisa Chen',
-                prospect_company: 'CloudScale',
-                rep_name: 'Alex Chen',
-                duration: '28 min',
-                avg_engagement: 82,
-                total_whispers: 1,
-                date: '2024-03-13',
-                status: 'completed',
+                id: 'demo-3', prospect_name: 'Lisa Chen', prospect_company: 'CloudScale',
+                rep_name: 'Alex Chen', duration: '28m', avg_engagement: 82,
+                total_whispers: 1, date: 'Mar 13, 2024',
             },
         ])
     }, [])
 
     return (
-        <div>
-            {/* Page Header */}
-            <div className="page-header">
+        <div style={{ padding: '0 24px 64px' }}>
+
+            {/* ── Page Header ── */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 48, marginTop: 16 }}>
                 <div>
-                    <h1 className="page-title">Dashboard</h1>
-                    <p className="page-subtitle">Your sales intelligence overview</p>
+                    <h1 className="page-title">Overview</h1>
+                    <p className="page-subtitle">Your sales intelligence metrics</p>
                 </div>
                 <Link to="/live">
                     <button className="btn btn-primary">
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <span className="live-dot" />
-                            Start Live Session
-                        </span>
+                        Start Live Session
                     </button>
                 </Link>
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid-3" style={{ marginBottom: 32 }}>
-                <div className="glass-card stat-card">
-                    <div className="stat-label">Avg Engagement</div>
-                    <div className="stat-value" style={{ color: '#22c55e' }}>70.3</div>
-                    <div className="stat-change positive">▲ 4.2 vs last week</div>
+            {/* ── Apple-Style Stat Display (No cards, pure floating typography) ── */}
+            <div className="grid-3" style={{ marginBottom: 64, padding: '0 16px' }}>
+                <div className="stat-hero">
+                    <div className="value" style={{ color: 'var(--apple-green)' }}>70.3</div>
+                    <div className="label">Avg Engagement</div>
+                    <div style={{ fontSize: 13, color: 'var(--apple-green)', marginTop: 4 }}>+4.2 vs last week</div>
                 </div>
-                <div className="glass-card stat-card">
-                    <div className="stat-label">Calls Analyzed</div>
-                    <div className="stat-value">23</div>
-                    <div className="stat-change positive">This month</div>
+                <div className="stat-hero">
+                    <div className="value">23</div>
+                    <div className="label">Calls Analyzed</div>
+                    <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 4 }}>This month</div>
                 </div>
-                <div className="glass-card stat-card">
-                    <div className="stat-label">Key Pattern</div>
-                    <div className="stat-value" style={{ fontSize: 18, lineHeight: 1.3 }}>
-                        Pricing Contempt
-                    </div>
-                    <div className="stat-change negative">Found in 60% of calls</div>
+                <div className="stat-hero">
+                    <div className="value" style={{ fontSize: 32, letterSpacing: -0.5, marginTop: 14 }}>Pricing Contempt</div>
+                    <div className="label">Top Flagged Pattern</div>
+                    <div style={{ fontSize: 13, color: 'var(--apple-red)', marginTop: 4 }}>Found in 60% of calls</div>
                 </div>
             </div>
 
-            {/* Recent Sessions */}
-            <div className="glass-card" style={{ padding: 24 }}>
-                <h3 style={{ fontSize: 16, fontWeight: 600, marginBottom: 20 }}>
-                    Recent Sessions
-                </h3>
+            {/* ── Unified iOS List Table ── */}
+            <h2 style={{ fontSize: 22, fontWeight: 600, letterSpacing: -0.4, marginBottom: 16, paddingLeft: 16 }}>
+                Recent Sessions
+            </h2>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                    {/* Table Header */}
-                    <div style={{
-                        display: 'grid',
-                        gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr 100px',
-                        padding: '8px 16px',
-                        fontSize: 12,
-                        textTransform: 'uppercase',
-                        letterSpacing: 1,
-                        color: 'var(--text-muted)',
-                        borderBottom: '1px solid var(--border-subtle)',
-                    }}>
-                        <div>Prospect</div>
-                        <div>Company</div>
-                        <div>Duration</div>
-                        <div>Engagement</div>
-                        <div>Whispers</div>
-                        <div></div>
-                    </div>
+            <div className="ios-list">
+                {/* Table Header */}
+                <div style={{
+                    display: 'grid', gridTemplateColumns: '2fr 1.5fr 100px 100px 100px 80px',
+                    padding: '12px 20px', fontSize: 11, fontWeight: 700, textTransform: 'uppercase',
+                    letterSpacing: 0.5, color: 'var(--text-secondary)',
+                    borderBottom: '0.5px solid var(--separator)'
+                }}>
+                    <div>Prospect</div>
+                    <div>Company</div>
+                    <div>Duration</div>
+                    <div>Engage</div>
+                    <div>Whispers</div>
+                    <div></div>
+                </div>
 
-                    {/* Session Rows */}
-                    {sessions.map((session) => (
-                        <div key={session.id} style={{
-                            display: 'grid',
-                            gridTemplateColumns: '2fr 1.5fr 1fr 1fr 1fr 100px',
-                            padding: '14px 16px',
-                            alignItems: 'center',
-                            borderBottom: '1px solid var(--border-subtle)',
-                            transition: 'background 0.15s',
-                            cursor: 'pointer',
-                        }}
-                            onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg-glass)')}
-                            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
-                        >
-                            <div>
-                                <div style={{ fontWeight: 500 }}>{session.prospect_name}</div>
-                                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>{session.date}</div>
-                            </div>
-                            <div style={{ color: 'var(--text-secondary)' }}>{session.prospect_company}</div>
-                            <div>{session.duration}</div>
-                            <div>
-                                <span style={{
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: 6,
-                                    padding: '2px 8px',
-                                    borderRadius: 12,
-                                    fontSize: 13,
-                                    fontWeight: 600,
-                                    background: session.avg_engagement >= 70
-                                        ? 'rgba(34, 197, 94, 0.12)' : session.avg_engagement >= 50
-                                            ? 'rgba(234, 179, 8, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-                                    color: session.avg_engagement >= 70
-                                        ? '#22c55e' : session.avg_engagement >= 50
-                                            ? '#eab308' : '#ef4444',
-                                }}>
-                                    {session.avg_engagement}
-                                </span>
-                            </div>
-                            <div>{session.total_whispers}</div>
-                            <div>
-                                <Link to={`/debrief/${session.id}`}>
-                                    <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: 12 }}>
-                                        View
-                                    </button>
-                                </Link>
-                            </div>
+                {/* Rows */}
+                {sessions.map((s, i) => (
+                    <div key={s.id} className="ios-list-row" style={{ gridTemplateColumns: '2fr 1.5fr 100px 100px 100px 80px', display: 'grid' }}>
+                        <div>
+                            <div style={{ fontSize: 16, fontWeight: 500, letterSpacing: -0.2 }}>{s.prospect_name}</div>
+                            <div style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 2 }}>{s.date}</div>
                         </div>
-                    ))}
-                </div>
+
+                        <div style={{ fontSize: 15, color: 'var(--text-secondary)' }}>{s.prospect_company}</div>
+
+                        <div style={{ fontSize: 15, fontFeatureSettings: '"tnum"' }}>{s.duration}</div>
+
+                        <div>
+                            <span style={{
+                                color: s.avg_engagement >= 70 ? 'var(--apple-green)' : s.avg_engagement >= 50 ? 'var(--apple-yellow)' : 'var(--apple-red)',
+                                fontSize: 15, fontWeight: 600, fontFeatureSettings: '"tnum"'
+                            }}>
+                                {s.avg_engagement}
+                            </span>
+                        </div>
+
+                        <div style={{ fontSize: 15, color: 'var(--text-secondary)', fontFeatureSettings: '"tnum"' }}>
+                            {s.total_whispers}
+                        </div>
+
+                        <div style={{ textAlign: 'right' }}>
+                            <Link to={`/debrief/${s.id}`}>
+                                <button className="btn btn-system" style={{ fontSize: 13, padding: '4px 12px' }}>
+                                    View
+                                </button>
+                            </Link>
+                        </div>
+                    </div>
+                ))}
             </div>
+
         </div>
     )
 }
