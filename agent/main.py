@@ -121,7 +121,11 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
     # Ensure the agent user exists in Stream before creating a call.
     # Stream server-side auth requires created_by_id to reference a valid user.
     try:
-        stream_client = agent.edge._client  # Access the underlying Stream client
+        from getstream import Stream
+        stream_client = Stream(
+            api_key=os.environ.get("STREAM_API_KEY", ""),
+            api_secret=os.environ.get("STREAM_API_SECRET", ""),
+        )
         stream_client.upsert_users(
             {
                 "id": config.agent_id,
@@ -131,7 +135,7 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
         )
         logger.info(f"Upserted agent user: {config.agent_id}")
     except Exception as e:
-        logger.warning(f"Could not upsert agent user (may already exist): {e}")
+        logger.warning(f"Could not upsert agent user: {e}")
 
     call = await agent.create_call(call_type, call_id)
 
