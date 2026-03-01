@@ -56,7 +56,7 @@ class IntelligenceConfig:
 class LLMConfig:
     """LLM integration settings."""
     # Gemini Live (real-time reasoning)
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-2.5-flash-native-audio-preview-12-2025"
     gemini_fps: int = 1  # Frames sent to Gemini per second
     gemini_signal_interval_seconds: int = 15  # Signal summary interval
 
