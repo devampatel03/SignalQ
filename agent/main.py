@@ -118,8 +118,10 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
     """
     logger.info(f"SignalIQ joining call: {call_type}/{call_id}")
 
-    # Ensure the agent user exists in Stream before creating a call.
-    # Stream server-side auth requires created_by_id to reference a valid user.
+    # Ensure the agent user exists in Stream and pre-create the call.
+    # The Vision Agents SDK has a bug where agent_user_id is None in StreamEdge,
+    # causing get_or_create to fail. We work around it by pre-creating the call
+    # with our own client so the SDK just "gets" the existing call.
     try:
         from getstream import Stream
         from getstream.models import UserRequest
@@ -127,6 +129,7 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
             api_key=os.environ.get("STREAM_API_KEY", ""),
             api_secret=os.environ.get("STREAM_API_SECRET", ""),
         )
+        # 1. Upsert agent user
         stream_client.upsert_users(
             UserRequest(
                 id=config.agent_id,
@@ -135,8 +138,17 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
             )
         )
         logger.info(f"Upserted agent user: {config.agent_id}")
+
+        # 2. Pre-create the call so SDK's get_or_create just "gets" it
+        video_call = stream_client.video.call(call_type, call_id)
+        video_call.get_or_create(
+            data={
+                "created_by_id": config.agent_id,
+            }
+        )
+        logger.info(f"Pre-created call: {call_type}/{call_id}")
     except Exception as e:
-        logger.warning(f"Could not upsert agent user: {e}")
+        logger.warning(f"Pre-setup failed: {e}")
 
     call = await agent.create_call(call_type, call_id)
 
