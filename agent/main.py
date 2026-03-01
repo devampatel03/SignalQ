@@ -80,13 +80,12 @@ async def create_agent(**kwargs):
             model_id=config.audio.tts_model_id,
         ),
 
-        # ── Deepgram STT (Speech Transcription) ─────────
-        # Transcribes both rep and prospect speech in real-time
-        # Used to correlate emotional reactions with specific words/topics
-        stt=deepgram.STT(
-            model=config.audio.stt_model,
-            language=config.audio.stt_language,
-        ),
+        # ── Deepgram STT — DISABLED ─────────────────────
+        # Gemini Realtime handles STT natively; Deepgram is not needed
+        # stt=deepgram.STT(
+        #     model=config.audio.stt_model,
+        #     language=config.audio.stt_language,
+        # ),
 
         # ── Video Processors ────────────────────────────
         processors=[
