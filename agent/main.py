@@ -120,8 +120,9 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
 
     # Ensure the agent user exists in Stream and pre-create the call.
     # The Vision Agents SDK has a bug where agent_user_id is None in StreamEdge,
-    # causing get_or_create to fail. We work around it by pre-creating the call
-    # with our own client so the SDK just "gets" the existing call.
+    # causing get_or_create to fail. We work around it by:
+    # 1. Upserting the user and pre-creating the call with our own client
+    # 2. Monkey-patching agent.edge.agent_user_id so the SDK passes it correctly
     try:
         from getstream import Stream
         from getstream.models import UserRequest
@@ -139,7 +140,7 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
         )
         logger.info(f"Upserted agent user: {config.agent_id}")
 
-        # 2. Pre-create the call so SDK's get_or_create just "gets" it
+        # 2. Pre-create the call
         video_call = stream_client.video.call(call_type, call_id)
         video_call.get_or_create(
             data={
@@ -149,6 +150,13 @@ async def join_call(agent, call_type: str, call_id: str, **kwargs):
         logger.info(f"Pre-created call: {call_type}/{call_id}")
     except Exception as e:
         logger.warning(f"Pre-setup failed: {e}")
+
+    # 3. Fix the SDK bug: patch agent_user_id onto the Edge transport
+    try:
+        agent.edge.agent_user_id = config.agent_id
+        logger.info(f"Patched edge.agent_user_id = {config.agent_id}")
+    except Exception as e:
+        logger.warning(f"Could not patch agent_user_id: {e}")
 
     call = await agent.create_call(call_type, call_id)
 
